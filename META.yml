@@ -20,4 +20,4 @@ requires:
   Sys::Hostname::Long: 0
   Sys::Syslog: 0
   Test::More: 0
-version: 1.03
+version: 1.04

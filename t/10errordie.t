@@ -1,4 +1,4 @@
-# $Id: 10errordie.t,v 1.4 2006/02/26 17:44:19 toni Exp $
+# $Id: 10errordie.t,v 1.5 2006/03/06 22:55:53 toni Exp $
 use Test::More tests => 20;
 #use Test::More qw(no_plan);
 use Test::Exception;
@@ -30,24 +30,21 @@ BEGIN {
 	my @loc = caller(1);
 	throw Luka::Exception::External( error => join("",@_), id => "generic",
 					 context => "External warning generated " .
+
 					 "at line $loc[2] in $loc[1]", severity => 3);
     };
 
 }
 
 our $FTP_HOST_ERR = "ftp.false";
-
 our $FTP_HOST = "ftp.kernel.org";
 our $FTP_DIR  = "pub";
 our $FTP_USER = "anonymous";
 our $FTP_PASS = "some\@bla.org";
 our $FTP_FILE = "bla.txt";
 
-my $what = new What;
-our $MTA = $what->mta;
-
-my $errordie_system_user = 1;
-my $running_exim = undef;
+our $MTA = What->new->mta;
+our $ERRORDIE_SYSTEM_USER = getpwnam "10errordie.t";
 
 diag( "Testing catching Luka::Exception::External via __DIE__ handler" );
 
@@ -59,7 +56,7 @@ throws_ok ( sub { ftp_classic() }, "Luka::Exception::External",
 
 diag( "Testing Luka's report entry in syslog" );
 
-if (defined($errordie_system_user)) {
+if (defined($ERRORDIE_SYSTEM_USER)) {
 
     lives_and ( sub {is ftp_classic_eval_report(), 14 }, 
 	    'caught Luka::Exception::External and reported it' );
@@ -93,6 +90,11 @@ if (defined($errordie_system_user)) {
 	like  (&get_latest_syslog(),
 	       qr/Mail system reported: RCPT error \(550 unknown user\)\!/,
 	       "ftp_classic_eval_report, error report in syslog 2");
+    } else {
+
+    	like  (1, qr/1/, "empty/placeholder test");
+    	like  (1, qr/1/, "empty/placeholder test");
+
     }
 }
 
@@ -118,7 +120,7 @@ if (not $MTA eq "Courier" and not $MTA eq "XMail") {
 
 }
 
-if (defined($errordie_system_user)) {
+if (defined($ERRORDIE_SYSTEM_USER)) {
 
     lives_and ( sub {is ftp_luka_catch(), 16 }, 
 		'caught Luka::Exception::External and reported it' );
@@ -163,7 +165,7 @@ if (defined($errordie_system_user)) {
 
 diag( "Running ftp session with multiple commands" );
 
-if (defined($errordie_system_user)) {
+if (defined($ERRORDIE_SYSTEM_USER)) {
 
     lives_and ( sub {is ftp_luka_ok(), 17 }, 
 		'reported success' );
