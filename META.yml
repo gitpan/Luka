@@ -3,7 +3,7 @@ author: 'Toni Prug <toni@irational.org>'
 build_requires:
   Net::FTP: 0
 distribution_type: module
-generated_by: Module::Install version 0.560
+generated_by: Module::Install version 0.580
 license: gpl
 name: Luka
 no_index:
@@ -20,4 +20,5 @@ requires:
   Sys::Hostname::Long: 0
   Sys::Syslog: 0
   Test::More: 0
-version: 1.04
+  What::MTA: 0
+version: 1.05

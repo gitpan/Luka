@@ -20,6 +20,7 @@ requires(qw(
 	Sys::Hostname::Long 0
 	Mail::SendEasy 0
         Test::More 0
+        What::MTA 0
 ));
 
 auto_install;

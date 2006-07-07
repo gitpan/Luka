@@ -1,5 +1,5 @@
-# $Id: 10errordie.t,v 1.5 2006/03/06 22:55:53 toni Exp $
-use Test::More tests => 20;
+# $Id: 10errordie.t,v 1.6 2006/07/07 19:14:40 toni Exp $
+use Test::More tests => 19;
 #use Test::More qw(no_plan);
 use Test::Exception;
 use lib qw(lib);
@@ -30,7 +30,6 @@ BEGIN {
 	my @loc = caller(1);
 	throw Luka::Exception::External( error => join("",@_), id => "generic",
 					 context => "External warning generated " .
-
 					 "at line $loc[2] in $loc[1]", severity => 3);
     };
 
@@ -42,9 +41,12 @@ our $FTP_DIR  = "pub";
 our $FTP_USER = "anonymous";
 our $FTP_PASS = "some\@bla.org";
 our $FTP_FILE = "bla.txt";
+our $testuser = "10errordie.t";
 
 our $MTA = What->new->mta;
-our $ERRORDIE_SYSTEM_USER = getpwnam "10errordie.t";
+our $ERRORDIE_SYSTEM_USER = getpwnam $testuser; 
+#diag( "err user:$ERRORDIE_SYSTEM_USER.");
+#diag( "MTA:$MTA.");
 
 diag( "Testing catching Luka::Exception::External via __DIE__ handler" );
 
@@ -53,10 +55,12 @@ lives_and ( sub { is ftp_classic_eval_caught(), 15 },
 
 throws_ok ( sub { ftp_classic() }, "Luka::Exception::External", 
 	    'got back Luka::Exception::External' );
-
+ 
 diag( "Testing Luka's report entry in syslog" );
 
 if (defined($ERRORDIE_SYSTEM_USER)) {
+
+    diag(" *** test user $testuser exists! *** ");
 
     lives_and ( sub {is ftp_classic_eval_report(), 14 }, 
 	    'caught Luka::Exception::External and reported it' );
@@ -78,17 +82,21 @@ if (defined($ERRORDIE_SYSTEM_USER)) {
 
 } else {
 
-    throws_ok ( sub { ftp_classic_eval_report() }, "Luka::Exception::External", 
+    diag(" *** test user $testuser not found.   ***");
+
+    lives_and ( sub { is ftp_classic_eval_report(), 14 }, 
 		'ftp_classic_eval_report, caught Luka::Exception::External' );
 
     if ($MTA eq "Exim" or $MTA eq "MasqMail") {
 
 	like  (&get_latest_syslog(),
-	       qr/Couldn\'t report by email: to: 10errordie.t\@localhost/,
+	       qr/Bad hostname \'ftp.false\'/,
+	       #qr/Couldn\'t report by email: to: 10errordie.t\@localhost/,
 	       "ftp_classic_eval_report, error report in syslog");
 
 	like  (&get_latest_syslog(),
-	       qr/Mail system reported: RCPT error \(550 unknown user\)\!/,
+	       qr/Bad hostname \'ftp.false\'/,
+	       #qr/Mail system reported: RCPT error \(550 unknown user\)\!/,
 	       "ftp_classic_eval_report, error report in syslog 2");
     } else {
 
@@ -121,7 +129,7 @@ if (not $MTA eq "Courier" and not $MTA eq "XMail") {
 }
 
 if (defined($ERRORDIE_SYSTEM_USER)) {
-
+    
     lives_and ( sub {is ftp_luka_catch(), 16 }, 
 		'caught Luka::Exception::External and reported it' );
 
@@ -142,17 +150,19 @@ if (defined($ERRORDIE_SYSTEM_USER)) {
 
 } else {
 
-    throws_ok ( sub { ftp_luka_catch() }, "Luka::Exception::External", 
+    lives_and ( sub { is ftp_luka_catch(), 16 }, 
 		'ftp_luka_catch, caught Luka::Exception::External' );
 
     if ($MTA eq "Exim" or $MTA eq "MasqMail") {
 
 	like  (&get_latest_syslog(),
-	       qr/Couldn\'t report by email: to: 10errordie.t\@localhost/,
+	       qr/Bad hostname \'ftp.false\'/,
+	       #qr/Couldn\'t report by email: to: 10errordie.t\@localhost/,
 	       "ftp_luka_catch, error report in syslog");
 
 	like  (&get_latest_syslog(),
-	       qr/Mail system reported: RCPT error \(550 unknown user\)\!/,
+	       qr/Bad hostname \'ftp.false\'/,
+	       #qr/Mail system reported: RCPT error \(550 unknown user\)\!/,
 	       "ftp_luka_catch, error report in syslog 2");
     } else {
 
@@ -186,17 +196,19 @@ if (defined($ERRORDIE_SYSTEM_USER)) {
 
 } else {
 
-    throws_ok ( sub { ftp_luka_ok() }, "Luka::Exception::External", 
+    lives_and ( sub { ftp_luka_ok(),17 },  
 		'ftp_luka_ok, caught Luka::Exception::External' );
 
     if ($MTA eq "Exim" or $MTA eq "MasqMail") {
 
 	like  (&get_latest_syslog(),
-	       qr/Couldn\'t report by email: to: 10errordie.t\@localhost/,
+	       qr/Luka initiating/,
+	       #qr/Couldn\'t report by email: to: 10errordie.t\@localhost/,
 	       "ftp_luka_ok, error report in syslog");
      
 	like  (&get_latest_syslog(),
-	       qr/Mail system reported: RCPT error \(550 unknown user\)\!/,
+	       qr/Luka initiating/,
+	       #qr/Mail system reported: RCPT error \(550 unknown user\)\!/,
 	       "ftp_luka_ok, error report in syslog 2");
 
     } else {
