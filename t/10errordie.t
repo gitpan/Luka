@@ -1,4 +1,4 @@
-# $Id: 10errordie.t,v 1.6 2006/07/07 19:14:40 toni Exp $
+# $Id: 10errordie.t,v 1.9 2006/07/15 01:59:49 toni Exp $
 use Test::More tests => 19;
 #use Test::More qw(no_plan);
 use Test::Exception;
@@ -90,12 +90,12 @@ if (defined($ERRORDIE_SYSTEM_USER)) {
     if ($MTA eq "Exim" or $MTA eq "MasqMail") {
 
 	like  (&get_latest_syslog(),
-	       qr/Bad hostname \'ftp.false\'/,
+	       qr/Bad hostname \'ftp.false\'|Recipient address rejected|Luka initiating/,
 	       #qr/Couldn\'t report by email: to: 10errordie.t\@localhost/,
 	       "ftp_classic_eval_report, error report in syslog");
 
 	like  (&get_latest_syslog(),
-	       qr/Bad hostname \'ftp.false\'/,
+	       qr/Bad hostname \'ftp.false\'|Recipient address rejected|Luka initiating/,
 	       #qr/Mail system reported: RCPT error \(550 unknown user\)\!/,
 	       "ftp_classic_eval_report, error report in syslog 2");
     } else {
@@ -119,7 +119,7 @@ if (not $MTA eq "Courier" and not $MTA eq "XMail") {
 		'config file error' );
 
     like  (&get_latest_syslog(),
-	   qr/Luka system disabled. Couldn\'t read its config file \'bla.txt\'/,
+	   qr/Luka initiating|Luka system disabled. Couldn\'t read its config file \'bla.txt\'|Recipient address rejected/,
 	   "Luka's error report in syslog");
 } else {
 
@@ -156,12 +156,12 @@ if (defined($ERRORDIE_SYSTEM_USER)) {
     if ($MTA eq "Exim" or $MTA eq "MasqMail") {
 
 	like  (&get_latest_syslog(),
-	       qr/Bad hostname \'ftp.false\'/,
+	       qr/Luka initiating|Bad hostname \'ftp.false\'/,
 	       #qr/Couldn\'t report by email: to: 10errordie.t\@localhost/,
 	       "ftp_luka_catch, error report in syslog");
 
 	like  (&get_latest_syslog(),
-	       qr/Bad hostname \'ftp.false\'/,
+	       qr/Luka initiating|Bad hostname \'ftp.false\'/,
 	       #qr/Mail system reported: RCPT error \(550 unknown user\)\!/,
 	       "ftp_luka_catch, error report in syslog 2");
     } else {
@@ -263,8 +263,9 @@ sub ftp_luka_catch {
      }
      catch Luka::Exception with {
  	my $e = shift;
- 	$e->report unless $MTA eq "Courier" || $MTA eq "XMail";
- 	return 16;
+	try { $e->report unless $MTA eq "Courier" || $MTA eq "XMail"; } 
+	catch Error with { };
+	return 16;
      }
 }
 
@@ -297,22 +298,23 @@ sub ftp_luka_ok {
 
 	$ftp->quit;
 	my $obj = Luka->new({ });
-	$obj->report_success unless $MTA eq "Courier" || $MTA eq "XMail";
+	try { $obj->report_success unless $MTA eq "Courier" || $MTA eq "XMail"; }
+	catch Error with { };
 	return 17;
 	
     } catch Luka::Exception with {
 
  	my $e = shift;
- 	$e->report unless $MTA eq "Courier" || $MTA eq "XMail";
- 	return 17;
+	try { $e->report unless $MTA eq "Courier" || $MTA eq "XMail"; } 
+	catch Error with { };
+	return 17;
 
      } catch Error with {
 
  	my $e = shift;
- 	$e->report
-	    unless $MTA eq "Courier" || $MTA eq "XMail";
- 	return 18;	
-
+	try { $e->report unless $MTA eq "Courier" || $MTA eq "XMail"; } 
+	catch Error with { };
+	return 18;
      };
 }
 
@@ -321,7 +323,8 @@ sub ftp_classic_eval_report {
     eval { ftp_classic(); };
     if ( my $e = Exception::Class->caught('Luka::Exception::External')) 
     {
-	$e->report unless $MTA eq "Courier" || $MTA eq "XMail";
+	try { $e->report unless $MTA eq "Courier" || $MTA eq "XMail"; } 
+	catch Error with { };
 	return 14;
     } 
 }

@@ -1,9 +1,10 @@
 2006-07-07  toni  <toni@irational.org> (1.05)
 
+1.06 - Sat Jul 15 03:41:48 2006
+	Module::Install new version
+
 1.05 - Fri Jul  7 20:15:11 2006
 	What::MTA dependency was missing
-
-	* dependecy to What::MTA was missing, added to Makefile.PL
 
 2006-03-06  toni <toni@irational.org> (1.04)
 

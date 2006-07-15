@@ -1,4 +1,4 @@
-# $Id: Luka.pm,v 1.10 2006/07/07 13:43:07 toni Exp $
+# $Id: Luka.pm,v 1.11 2006/07/15 01:20:12 toni Exp $
 package Luka;
 use strict;
 use warnings;
@@ -23,7 +23,7 @@ our (@ISA, @EXPORT_OK, @EXPORT, @modes, %error_str );
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(report_error);
 
-our $VERSION = "1.05";
+our $VERSION = "1.06";
 our $LukaDebug = "LukaDebug";
 
 use Class::Std; 
@@ -173,13 +173,25 @@ use Class::Std;
 	    }
 
 	    # do we have syslogd running or not?
-	    eval {
-		local $SIG{'__DIE__'}; # see "perldoc -f eval"
-		openlog($filename{$ident}, "pid,noname", "daemon");
-		syslog('info', "Luka initiating...");
+	    try {
+	    #eval {
+		#local $SIG{'__DIE__'}; # see "perldoc -f eval"
+		openlog($filename{$ident}, "pid,noname", "daemon")
+		    || die;
+		syslog('info', "Luka initiating...") || die;
 		$syslogd{$ident} = 1;
-	    };
-	    if ($@ or $!) {
+		open(BLA, '>> /tmp/log');
+		print BLA "test try \n";
+		close BLA;
+	    #};
+	    } catch Error with {
+	    #if ($@ or $!) {
+		my $e = shift;
+		my $bla = Dumper $e;
+		open(BLA2, '>> /tmp/log');
+		print BLA2 "test catch\n";
+		close BLA2;
+		die "oops";
 		$syslogd{$ident} = undef;
 	    }
 

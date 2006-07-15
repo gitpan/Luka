@@ -12,7 +12,9 @@ build_requires(qw(
 
 requires(qw(
 	Error 0
+        Sub::Uplevel 0 
 	Class::Std 0
+	Test::Exception 0
 	Exception::Class 1.21
 	Config::IniFiles 0
 	Sys::Syslog 0
