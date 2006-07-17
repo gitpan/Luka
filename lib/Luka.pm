@@ -1,4 +1,4 @@
-# $Id: Luka.pm,v 1.11 2006/07/15 01:20:12 toni Exp $
+# $Id: Luka.pm,v 1.12 2006/07/17 22:02:44 toni Exp $
 package Luka;
 use strict;
 use warnings;
@@ -23,7 +23,7 @@ our (@ISA, @EXPORT_OK, @EXPORT, @modes, %error_str );
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(report_error);
 
-our $VERSION = "1.06";
+our $VERSION = "1.07";
 our $LukaDebug = "LukaDebug";
 
 use Class::Std; 

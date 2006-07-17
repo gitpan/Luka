@@ -23,4 +23,5 @@ requires:
   Test::Exception: 0
   Test::More: 0
   What::MTA: 0
-version: 1.06
+  version: 0
+version: 1.07

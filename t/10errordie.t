@@ -1,4 +1,4 @@
-# $Id: 10errordie.t,v 1.9 2006/07/15 01:59:49 toni Exp $
+# $Id: 10errordie.t,v 1.11 2006/07/16 11:34:12 toni Exp $
 use Test::More tests => 19;
 #use Test::More qw(no_plan);
 use Test::Exception;
@@ -50,9 +50,11 @@ our $ERRORDIE_SYSTEM_USER = getpwnam $testuser;
 
 diag( "Testing catching Luka::Exception::External via __DIE__ handler" );
 
+### 1 ###
 lives_and ( sub { is ftp_classic_eval_caught(), 15 }, 
 	    'caught Luka::Exception::External' );
 
+### 2 ###
 throws_ok ( sub { ftp_classic() }, "Luka::Exception::External", 
 	    'got back Luka::Exception::External' );
  
@@ -62,20 +64,24 @@ if (defined($ERRORDIE_SYSTEM_USER)) {
 
     diag(" *** test user $testuser exists! *** ");
 
+    ### 3 ###
     lives_and ( sub {is ftp_classic_eval_report(), 14 }, 
 	    'caught Luka::Exception::External and reported it' );
 
     if ($MTA eq "Exim" or $MTA eq "MasqMail") {
 
+	### 4 ###
 	like  (&get_latest_syslog(),
 	       qr/Error report sent to 10errordie.t/,
 	       "Luka's error report in syslog");
-
+        ### 5 ###
 	like  (1, qr/1/, "empty/placeholder test");
 
     } else {
 
+	### 4 ###
     	like  (1, qr/1/, "empty/placeholder test");
+	### 5 ###
     	like  (1, qr/1/, "empty/placeholder test");
 
     }
@@ -84,23 +90,26 @@ if (defined($ERRORDIE_SYSTEM_USER)) {
 
     diag(" *** test user $testuser not found.   ***");
 
+    ### 3 ###
     lives_and ( sub { is ftp_classic_eval_report(), 14 }, 
 		'ftp_classic_eval_report, caught Luka::Exception::External' );
 
     if ($MTA eq "Exim" or $MTA eq "MasqMail") {
 
+        ### 4 ###
 	like  (&get_latest_syslog(),
 	       qr/Bad hostname \'ftp.false\'|Recipient address rejected|Luka initiating/,
 	       #qr/Couldn\'t report by email: to: 10errordie.t\@localhost/,
 	       "ftp_classic_eval_report, error report in syslog");
-
+        ### 5 ###
 	like  (&get_latest_syslog(),
 	       qr/Bad hostname \'ftp.false\'|Recipient address rejected|Luka initiating/,
 	       #qr/Mail system reported: RCPT error \(550 unknown user\)\!/,
 	       "ftp_classic_eval_report, error report in syslog 2");
     } else {
-
+        ### 4 ###
     	like  (1, qr/1/, "empty/placeholder test");
+	### 5 ###
     	like  (1, qr/1/, "empty/placeholder test");
 
     }
@@ -108,6 +117,7 @@ if (defined($ERRORDIE_SYSTEM_USER)) {
 
 diag( "Testing catching Luka::Exception::External directly, via try/catch of Error.pm" );
 
+### 6 ###
 throws_ok ( sub { wrong_luka_constructor() }, "Exception::Class::Base", 
 	    'unknown field file passed to constructor for class Luka::Exception::External' );
 
@@ -115,58 +125,67 @@ throws_ok ( sub { wrong_luka_constructor() }, "Exception::Class::Base",
 diag( "Testing ->report exceptions thrown from Luka::Conf (except for Courier&XMail MTAs)" );
 if (not $MTA eq "Courier" and not $MTA eq "XMail") {
 
+    ### 7 ###
     throws_ok ( sub { config_file_error() }, "Luka::Exception::Program", 
 		'config file error' );
-
+    ### 8 ###
     like  (&get_latest_syslog(),
-	   qr/Luka initiating|Luka system disabled. Couldn\'t read its config file \'bla.txt\'|Recipient address rejected/,
+	   qr/Bad hostname \'ftp.false\'|Luka initiating|Luka system disabled. Couldn\'t read its config file \'bla.txt\'|Recipient address rejected|delivered to command/,
 	   "Luka's error report in syslog");
 } else {
 
+    ### 7 ###
     like  (1, qr/1/, "empty/placeholder test");
+    ### 8 ###
     like  (1, qr/1/, "empty/placeholder test");
 
 }
 
 if (defined($ERRORDIE_SYSTEM_USER)) {
     
+    ### 9 ###
     lives_and ( sub {is ftp_luka_catch(), 16 }, 
 		'caught Luka::Exception::External and reported it' );
 
     if ($MTA eq "Exim" or $MTA eq "MasqMail") {
 
+	### 10 ###
 	like  (&get_latest_syslog(),
 	       qr/Error report sent to 10errordie.t/,
 	       "Luka's error report in syslog");
-
+	### 11 ###
 	like  (1, qr/1/, "empty test");
 
     }  else {
-
+	### 10 ###
     	like  (1, qr/1/, "empty/placeholder test");
+	### 11 ###
     	like  (1, qr/1/, "empty/placeholder test");
 
     }
 
 } else {
 
+    ### 9 ###
     lives_and ( sub { is ftp_luka_catch(), 16 }, 
 		'ftp_luka_catch, caught Luka::Exception::External' );
 
     if ($MTA eq "Exim" or $MTA eq "MasqMail") {
 
+	### 10 ###
 	like  (&get_latest_syslog(),
 	       qr/Luka initiating|Bad hostname \'ftp.false\'/,
 	       #qr/Couldn\'t report by email: to: 10errordie.t\@localhost/,
 	       "ftp_luka_catch, error report in syslog");
-
+	### 11 ###
 	like  (&get_latest_syslog(),
 	       qr/Luka initiating|Bad hostname \'ftp.false\'/,
 	       #qr/Mail system reported: RCPT error \(550 unknown user\)\!/,
 	       "ftp_luka_catch, error report in syslog 2");
     } else {
-
+	### 10 ###
     	like  (1, qr/1/, "empty/placeholder test");
+	### 11 ###
     	like  (1, qr/1/, "empty/placeholder test");
 
     }
@@ -177,43 +196,49 @@ diag( "Running ftp session with multiple commands" );
 
 if (defined($ERRORDIE_SYSTEM_USER)) {
 
-    lives_and ( sub {is ftp_luka_ok(), 17 }, 
+    ### 12 ###
+    lives_and ( sub { ftp_luka_ok(), 17 }, 
 		'reported success' );
 
     if ($MTA eq "Exim" or $MTA eq "MasqMail") {
 
+	### 13 ###
 	like  (&get_latest_syslog(),
 	       qr/Success report sent to 10errordie.t/,
 	       "Luka's success report in syslog");
-	
+	### 14 ###	
 	like  (1, qr/1/, "empty test");
 
     } else  {
-
+	### 13 ###
     	like  (1, qr/1/, "empty/placeholder test");
+	### 14 ###
     	like  (1, qr/1/, "empty/placeholder test");
     }
 
 } else {
 
+    ### 12 ###
     lives_and ( sub { ftp_luka_ok(),17 },  
 		'ftp_luka_ok, caught Luka::Exception::External' );
 
     if ($MTA eq "Exim" or $MTA eq "MasqMail") {
 
+	### 13 ###
 	like  (&get_latest_syslog(),
 	       qr/Luka initiating/,
 	       #qr/Couldn\'t report by email: to: 10errordie.t\@localhost/,
 	       "ftp_luka_ok, error report in syslog");
-     
+     	### 14 ###
 	like  (&get_latest_syslog(),
 	       qr/Luka initiating/,
 	       #qr/Mail system reported: RCPT error \(550 unknown user\)\!/,
 	       "ftp_luka_ok, error report in syslog 2");
 
     } else {
-
+	### 13 ###
     	like  (1, qr/1/, "empty/placeholder test");
+	### 14 ###
     	like  (1, qr/1/, "empty/placeholder test");
 
     }

@@ -12,6 +12,7 @@ build_requires(qw(
 
 requires(qw(
 	Error 0
+	version 0
         Sub::Uplevel 0 
 	Class::Std 0
 	Test::Exception 0
