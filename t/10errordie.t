@@ -1,4 +1,4 @@
-# $Id: 10errordie.t,v 1.11 2006/07/16 11:34:12 toni Exp $
+# $Id: 10errordie.t,v 1.12 2006/07/18 13:35:57 toni Exp $
 use Test::More tests => 19;
 #use Test::More qw(no_plan);
 use Test::Exception;
@@ -253,8 +253,11 @@ if (defined($ERRORDIE_SYSTEM_USER)) {
 sub get_latest_syslog {
     sleep 1; # small delay required to allow syslog to process data
     # Reporting that goes into syslog
-    # roughly distinguishing RedHat
-    my $log = -e "/etc/redhat-release" ? "messages" : "syslog";
+    # distinguishing RedHat, FreeBSD
+    my $log = -e "/etc/redhat-release" ? "messages" 	
+	 : `uname` =~ "FreeBSD" ? "messages"
+	 : "syslog";
+    diag("going to tail log '/var/log/$log'");
     return `tail -n 2 /var/log/$log`;
 }
 

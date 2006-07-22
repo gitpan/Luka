@@ -1,6 +1,9 @@
 1.06 - Sat Jul 15 03:41:48 2006
 	Module::Install new version
 
+1.08 - Sat Jul 22 15:25:52 2006
+	fix for tests on FreeBSD
+
 1.07 - Mon Jul 17 22:06:56 2006
 	dependecy on "version" added
 
